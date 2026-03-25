@@ -48,8 +48,8 @@ func GeneratePublicKey(privateKey *big.Int, g *big.Int, p *big.Int) *big.Int {
 	return new(big.Int).Exp(g, privateKey, p)
 }
 
-func ComputeSharedKey(pubKey *big.Int, clientPubKey *big.Int, p *big.Int) *big.Int {
-	return new(big.Int).Exp(pubKey, clientPubKey, p)
+func ComputeSharedKey(privateKey *big.Int, clientPubKey *big.Int, p *big.Int) *big.Int {
+	return new(big.Int).Exp(privateKey, clientPubKey, p)
 }
 
 func HandleConn(lst net.Listener, g *big.Int, p *big.Int) {
@@ -74,10 +74,21 @@ func HandleConn(lst net.Listener, g *big.Int, p *big.Int) {
 		return
 	}
 	fmt.Println("client public key received:",clientPubKey)
-	conn.Write(pubKey.Bytes())
-	fmt.Printf("final value : %v", ComputeSharedKey(pubKey,clientPubKey,p))
+	conn.Write([]byte(fmt.Sprintf("%X", pubKey)))
+	fmt.Printf("final value : %v", ComputeSharedKey(clientPubKey,privateKey,p))
 }
 
 func main() {
-
+	p,g,err:= GenerateBaseMod()
+	if err!=nil{
+		fmt.Println("unable to generate base")
+		return
+	}
+	listener,err:=net.Listen("tcp",":9000")
+	if err!=nil{
+		fmt.Println("unable to listen , verif your port")
+		return
+	}
+	fmt.Println("listening for incomming connexion...")
+	HandleConn(listener,g,p)
 }

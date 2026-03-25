@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"net"
 	"strings"
 )
 
@@ -51,11 +52,38 @@ func GeneratePublicKey(privateKey *big.Int,g *big.Int,p *big.Int) (*big.Int){
 }
 
 
-func ComputeSharedKey(pubKey *big.Int, clientPubKey *big.Int, p *big.Int) (*big.Int){
-	return new(big.Int).Exp(pubKey,clientPubKey,p)
+func ComputeSharedKey(privateKey *big.Int, serverPubKey *big.Int, p *big.Int) (*big.Int){
+	return new(big.Int).Exp(serverPubKey,privateKey,p)
 }
 
 func main(){
+	p,g,err:= GenerateBaseMod()
+	if err!=nil{
+		fmt.Println("unable to generate base")
+		return
+	}
+	privateKey,err:=GeneratePrivateKey(p)
+	if err!=nil{
+		fmt.Println("unable to generate base")
+		return 
+	}
+	publicKey:=GeneratePublicKey(privateKey,g,p)
+	
+	conn,err:=net.Dial("tcp","127.0.0.1:9000")
+	if err!=nil{
+		fmt.Println("unable to generate base")
+		return
+	}
+	conn.Write([]byte(fmt.Sprintf("%X", publicKey)))
+	buffer:=make([]byte,4096)
+	n,err:=conn.Read(buffer)
+	serverPubKey,ok:= new(big.Int).SetString(string(buffer[:n]),16)
+	if !ok{
+		fmt.Println("unable to parse server public key")
+	}
+
+	fmt.Printf("final value : %v", ComputeSharedKey(privateKey,serverPubKey,p))
+	
 
 }
 
