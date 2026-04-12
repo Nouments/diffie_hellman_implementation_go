@@ -34,14 +34,14 @@ The code uses the **RFC 3526 2048-bit MODP Group** prime (`p`) and generator (`g
 
 1. Start the server:
 ```bash
-go run ./server/main.Go
+go run ./server/main.go
 
 ```
 
 
 2. Start the client:
 ```bash
-go run ./client/main.Go
+go run ./client/main.go
 
 ```
 
